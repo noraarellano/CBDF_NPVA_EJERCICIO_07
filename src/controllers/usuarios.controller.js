@@ -88,7 +88,7 @@ exports.updateUser = async(req, res)=>{
             })
         }else{
             //Se requiere escribir la nueva clave 
-            const salt = await bcryp.hash.genSalt(8);
+            const salt = await bcrypt.hash.genSalt(8);
             const claveEncriptada =await bcrypt.hash(clave, salt);
             await Usuarios.findOneAndUpdate({correo:correo},{nombres:nombres, apellidos:apellidos, clave:claveEncriptada})
             res.status(200).json({
