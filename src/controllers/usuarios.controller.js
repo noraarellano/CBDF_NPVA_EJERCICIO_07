@@ -1,0 +1,131 @@
+const bcrypt = require('bcryptjs')
+const Usuario = require('../models/usuario.model')
+
+exports.getAllUser = async(req,res)=>{
+    try{
+        const Usuarios = await Usuario.find();
+        res.status(200).json({
+            estado: 1,
+            mensaje: "Usuarios encontrados",
+            Usuarios : Usuarios
+        })
+    }catch(error){
+        res.status(500).json({
+            estado:1,
+            mensaje:"Usuarios no encontrados"
+        })
+    }
+}
+
+exports.getAllUserByEmail = async(req,res)=>{
+    try {
+          const {correo} = req.params;
+          const usuario = await Usuario.findOne({correo:correo}).exec();
+            if(usuario){
+                res.status(200).json({
+                    estado:1,
+                    mensaje:"Usuario encontrado",
+                    usuario:usuario
+                })
+            }else{
+                res.status(400).json({
+                    estado:0,
+                    mensaje:"Usuario no encontrado"
+                })
+            }
+    }catch(error){
+        res.status(500).json({
+            estado:0,
+            mensaje:"Ocurrió un error desconocido"
+        })
+        console.log(error);
+    }
+}
+
+exports.addUser = async(req, res)=>{
+    try{
+        const{nombres, apellidos, usuario, correo, clave} = req.body;
+        if(nombres == undefined || apellidos == undefined || usuario == undefined || correo == undefined || clave == undefined){
+           res.status(400).json({
+            estado:0,
+            mensaje:"Faltan parametros"
+           })
+           //Falta encriptar la clave
+        }else{
+            const NuevoUsuario = await Usuario.create({nombres, apellidos, usuario, correo, clave})
+            if(NuevoUsuario){
+                res.status(200).json({
+                    estado:1,
+                    mensaje:"Usuario creado con éxito",
+                    usuario:NuevoUsuario
+                })
+            }else{
+                res.status(500).json({
+                    estado:0,
+                    mensaje:"Ocurrió un error desconocido"
+                })
+            }
+        }  
+    }catch(error){
+        res.status(500).json({
+            estado:0,
+            mensaje:"Ocurrió un error desconocido"
+        })
+        //Programador
+        console.log(error);
+    }
+}
+
+exports.updateUser = async(req, res)=>{
+    try{
+        //Que datos actualizamos
+        const {correo} = req.params;
+        const {nombres, apellidos, clave} = req.body;
+        if(nombres==undefined, apellidos==undefined, clave==undefined){
+            res.status(404).json({
+                estado:0,
+                mensaje:"Faltan parámetros"
+            })
+        }else{
+            //Se requiere escribir la nueva clave 
+            const salt = await bcryp.hash.genSalt(8);
+            const claveEncriptada =await bcrypt.hash(clave, salt);
+            await Usuarios.findOneAndUpdate({correo:correo},{nombres:nombres, apellidos:apellidos, clave:claveEncriptada})
+            res.status(200).json({
+                estado:1,
+                mensaje:"Usuario actualizado"
+            })
+        }
+    }catch(error){
+        console.log(error);
+        res.status(500).json({
+            estado:0,
+            mensaje:"Ocurrió un error desconocido"
+        })
+    }
+}
+
+exports.deleteUser = async(req,res)=>{
+    try {
+          const {correo} = req.params;
+          const usuario = await Usuario.findOne({correo}).exec();
+          if(usuario){
+            await Usuario.deleteOne(usuario)
+            res.status(200).json({
+                estado:1,
+                mensaje:"Usuario eliminado"
+            })
+          }else{
+            res.status(500).json({
+                estado:0,
+                mensaje:"Usuario no encontrado"
+            })
+          }
+    }catch(error){
+        console.log(error);
+        res.status(500).json({
+            estado:0,
+            mensaje:"Ocurrio un error desconocido"
+        })
+    }
+}
